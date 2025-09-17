@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36414.22 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QuickTix", "QuickTix\QuickTix.csproj", "{3166284A-EBE3-46D7-BF19-2E2A0EB0CC53}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3166284A-EBE3-46D7-BF19-2E2A0EB0CC53}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3166284A-EBE3-46D7-BF19-2E2A0EB0CC53}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3166284A-EBE3-46D7-BF19-2E2A0EB0CC53}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3166284A-EBE3-46D7-BF19-2E2A0EB0CC53}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {224B5665-4CD6-42C8-B537-8B6EC9D6A650}
+	EndGlobalSection
+EndGlobal
