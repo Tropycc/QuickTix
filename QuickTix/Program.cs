@@ -1,4 +1,9 @@
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using QuickTix.Data;
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddDbContext<QuickTixContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("QuickTixContext") ?? throw new InvalidOperationException("Connection string 'QuickTixContext' not found.")));
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
