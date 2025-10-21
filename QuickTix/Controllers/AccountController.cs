@@ -24,7 +24,7 @@ namespace QuickTix.Controllers
         public async Task<IActionResult> Login(string username, string password, string returnUrl)
         {
 
-            if (username == _configuration["username"] && password == _configuration["password"])
+            if (username == _configuration["ticketsusername"] && password == _configuration["ticketspassword"])
             {
                 // Create a list of claims identifying the user
                 var claims = new List<Claim>
