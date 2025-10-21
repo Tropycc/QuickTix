@@ -1,69 +1,77 @@
 ﻿@model QuickTix.Models.Listing
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Edit Listing";
 }
 
-<h1>Edit</h1>
+<h2>Edit Listing</h2>
 
-<h4>Listing</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="ListingId" />
-            <div class="form-group">
-                <label asp-for="CategoryId" class="control-label"></label>
-                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="OwnerId" class="control-label"></label>
-                <select asp-for="OwnerId" class="form-control" asp-items="ViewBag.OwnerId"></select>
-                <span asp-validation-for="OwnerId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Title" class="control-label"></label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Category" class="control-label"></label>
-                <input asp-for="Category" class="form-control" />
-                <span asp-validation-for="Category" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Location" class="control-label"></label>
-                <input asp-for="Location" class="form-control" />
-                <span asp-validation-for="Location" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Owner" class="control-label"></label>
-                <input asp-for="Owner" class="form-control" />
-                <span asp-validation-for="Owner" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ListingDate" class="control-label"></label>
-                <input asp-for="ListingDate" class="form-control" />
-                <span asp-validation-for="ListingDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
+<form asp-action="Edit" asp-controller="Listings" enctype="multipart/form-data">
+    <input type="hidden" asp-for="ListingId" />
+    <input type="hidden" asp-for="PhotoFileName" />
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="form-group">
+        <label asp-for="CategoryId" class="control-label"></label>
+        <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
+    <div class="form-group">
+        <label asp-for="OwnerId" class="control-label"></label>
+        <select asp-for="OwnerId" class="form-control" asp-items="ViewBag.OwnerId"></select>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Title" class="control-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Description" class="control-label"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Location" class="control-label"></label>
+        <input asp-for="Location" class="form-control" />
+        <span asp-validation-for="Location" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ListingDate" class="control-label"></label>
+        <input asp-for="ListingDate" class="form-control" type="date" />
+        <span asp-validation-for="ListingDate" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label>Current Photo</label><br />
+        @if (!string.IsNullOrEmpty(Model.PhotoFileName))
+        {
+            <img src="~/images/@Model.PhotoFileName" alt="Current Photo" width="200" height="auto" class="rounded shadow-sm mb-2" />
+        }
+        else
+        {
+            <p>No image uploaded.</p>
+        }
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Photo" class="control-label">Upload New Photo</label>
+        <input asp-for="Photo" class="form-control" type="file" accept="image/*" />
+        <span asp-validation-for="Photo" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mt-3">
+        <input type="submit" value="Save Changes" class="btn btn-primary" />
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

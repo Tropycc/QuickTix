@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,38 +7,38 @@ using QuickTix.Models;
 
 namespace QuickTix.Controllers
 {
+    [Authorize]
     public class ListingsController : Controller
     {
         private readonly QuickTixContext _context;
+        private readonly IWebHostEnvironment _hostEnvironment;
 
-        public ListingsController(QuickTixContext context)
+        public ListingsController(QuickTixContext context, IWebHostEnvironment hostEnvironment)
         {
             _context = context;
+            _hostEnvironment = hostEnvironment;
         }
 
         // GET: Listings
         public async Task<IActionResult> Index()
         {
-            var quickTixContext = _context.Listing.Include(l => l.Categories).Include(l => l.Owners);
-            return View(await quickTixContext.ToListAsync());
+            var listings = _context.Listing
+                .Include(l => l.Categories)
+                .Include(l => l.Owners);
+            return View(await listings.ToListAsync());
         }
 
         // GET: Listings/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var listing = await _context.Listing
                 .Include(l => l.Categories)
                 .Include(l => l.Owners)
                 .FirstOrDefaultAsync(m => m.ListingId == id);
-            if (listing == null)
-            {
-                return NotFound();
-            }
+
+            if (listing == null) return NotFound();
 
             return View(listing);
         }
@@ -49,100 +46,146 @@ namespace QuickTix.Controllers
         // GET: Listings/Create
         public IActionResult Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "CategoryId");
-            ViewData["OwnerId"] = new SelectList(_context.Set<Owner>(), "OwnerId", "OwnerId");
+            ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "Name");
+            ViewData["OwnerId"] = new SelectList(_context.Set<Owner>(), "OwnerId", "Name");
             return View();
         }
 
         // POST: Listings/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ListingId,CategoryId,OwnerId,Title,Description,Category,Location,Owner,ListingDate")] Listing listing)
+        public async Task<IActionResult> Create([Bind("ListingId,CategoryId,OwnerId,Title,Description,Location,ListingDate,Photo")] Listing listing)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(listing);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                // Repopulate dropdowns and return view
+                ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "Name", listing.CategoryId);
+                ViewData["OwnerId"] = new SelectList(_context.Set<Owner>(), "OwnerId", "Name", listing.OwnerId);
+                return View(listing);
             }
-            ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "CategoryId", listing.CategoryId);
-            ViewData["OwnerId"] = new SelectList(_context.Set<Owner>(), "OwnerId", "OwnerId", listing.OwnerId);
-            return View(listing);
+
+            // Handle image upload
+            if (listing.Photo != null && listing.Photo.Length > 0)
+            {
+                string uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath, "images");
+                Directory.CreateDirectory(uploadsFolder);
+
+                string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(listing.Photo.FileName);
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await listing.Photo.CopyToAsync(fileStream);
+                }
+
+                listing.PhotoFileName = uniqueFileName;
+            }
+
+            _context.Add(listing);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction("Index", "Home");
         }
 
         // GET: Listings/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var listing = await _context.Listing.FindAsync(id);
-            if (listing == null)
-            {
-                return NotFound();
-            }
-            ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "CategoryId", listing.CategoryId);
-            ViewData["OwnerId"] = new SelectList(_context.Set<Owner>(), "OwnerId", "OwnerId", listing.OwnerId);
+            if (listing == null) return NotFound();
+
+            // Show current photo in the edit view
+            listing.ExistingPhotoPath = listing.PhotoFileName;
+
+            ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "Name", listing.CategoryId);
+            ViewData["OwnerId"] = new SelectList(_context.Set<Owner>(), "OwnerId", "Name", listing.OwnerId);
             return View(listing);
         }
 
         // POST: Listings/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("ListingId,CategoryId,OwnerId,Title,Description,Category,Location,Owner,ListingDate")] Listing listing)
+        public async Task<IActionResult> Edit(
+    int id,
+    [Bind("ListingId,CategoryId,OwnerId,Title,Description,Location,ListingDate,Photo,PhotoFileName")] Listing listing)
         {
             if (id != listing.ListingId)
-            {
                 return NotFound();
-            }
+
+            var existingListing = await _context.Listing.AsNoTracking()
+                .FirstOrDefaultAsync(l => l.ListingId == id);
+
+            if (existingListing == null)
+                return NotFound();
+
+            listing.Photo ??= null;
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(listing);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!ListingExists(listing.ListingId))
+                    string uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath, "images");
+                    Directory.CreateDirectory(uploadsFolder);
+
+                    // If a new photo is uploaded
+                    if (listing.Photo != null && listing.Photo.Length > 0)
                     {
-                        return NotFound();
+                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(listing.Photo.FileName);
+                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await listing.Photo.CopyToAsync(fileStream);
+                        }
+
+                        // Delete old photo if exists
+                        if (!string.IsNullOrEmpty(existingListing.PhotoFileName))
+                        {
+                            string oldFile = Path.Combine(uploadsFolder, existingListing.PhotoFileName);
+                            if (System.IO.File.Exists(oldFile))
+                                System.IO.File.Delete(oldFile);
+                        }
+
+                        listing.PhotoFileName = uniqueFileName;
                     }
                     else
                     {
-                        throw;
+                        // No new photo uploaded — preserve existing or none
+                        listing.PhotoFileName = existingListing.PhotoFileName;
                     }
+
+                    _context.Update(listing);
+                    await _context.SaveChangesAsync();
+
+                    return RedirectToAction("Index", "Home");
                 }
-                return RedirectToAction(nameof(Index));
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error saving edit: {ex.Message}");
+                    ModelState.AddModelError("", "There was an issue saving your edit. Please try again.");
+                }
             }
-            ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "CategoryId", listing.CategoryId);
-            ViewData["OwnerId"] = new SelectList(_context.Set<Owner>(), "OwnerId", "OwnerId", listing.OwnerId);
+
+            // Repopulate dropdowns for re-rendered view
+            ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "Name", listing.CategoryId);
+            ViewData["OwnerId"] = new SelectList(_context.Set<Owner>(), "OwnerId", "Name", listing.OwnerId);
+            listing.ExistingPhotoPath = existingListing.PhotoFileName;
+
             return View(listing);
         }
 
         // GET: Listings/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
+            if (id == null) return NotFound();
 
             var listing = await _context.Listing
                 .Include(l => l.Categories)
                 .Include(l => l.Owners)
                 .FirstOrDefaultAsync(m => m.ListingId == id);
-            if (listing == null)
-            {
-                return NotFound();
-            }
+
+            if (listing == null) return NotFound();
 
             return View(listing);
         }
@@ -155,11 +198,17 @@ namespace QuickTix.Controllers
             var listing = await _context.Listing.FindAsync(id);
             if (listing != null)
             {
-                _context.Listing.Remove(listing);
-            }
+                if (!string.IsNullOrEmpty(listing.PhotoFileName))
+                {
+                    string photoPath = Path.Combine(_hostEnvironment.WebRootPath, "images", listing.PhotoFileName);
+                    if (System.IO.File.Exists(photoPath))
+                        System.IO.File.Delete(photoPath);
+                }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
+                _context.Listing.Remove(listing);
+                await _context.SaveChangesAsync();
+            }
+            return RedirectToAction("Index", "Home");
         }
 
         private bool ListingExists(int id)
