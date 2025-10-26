@@ -2,9 +2,22 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using QuickTix.Data;
+using System;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<QuickTixContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("QuickTixContext") ?? throw new InvalidOperationException("Connection string 'QuickTixContext' not found.")));
+{
+    var env = builder.Environment;
+
+    if (env.IsDevelopment())
+    {
+        options.UseSqlite(builder.Configuration.GetConnectionString("QuickTixContext"));
+    }
+    else
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("AzureContext"));
+    }
+});
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
