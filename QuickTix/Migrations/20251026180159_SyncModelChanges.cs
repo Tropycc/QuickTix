@@ -10,7 +10,7 @@ namespace QuickTix.Migrations
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
-        {
+        { 
             migrationBuilder.AlterColumn<string>(
                 name: "Name",
                 table: "Owner",
