@@ -1,17 +1,15 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@{
+    ViewData["Title"] = "Logout";
 }
-<h1>Logout</h1>
 
+<h1>Logout</h1>
 <p>Are you sure you want to logout?</p>
 
-<form>
-    <p>
-        <input type="submit" class="btn btn-primary" value="Logout" />
-    </p>
-    <p>
-        <a asp-controller="Home" asp-action="Index">Back to Home</a>
-    </p>
+<form asp-action="LogoutConfirmed" asp-controller="Account" method="post">
+    @Html.AntiForgeryToken()
+    <input type="submit" class="btn btn-primary" value="Logout" />
 </form>
+
+<p>
+    <a asp-controller="Home" asp-action="Index">Back to Home</a>
+</p>
