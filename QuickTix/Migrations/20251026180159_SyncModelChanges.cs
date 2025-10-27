@@ -33,8 +33,8 @@ namespace QuickTix.Migrations
                 type: "int",
                 nullable: false,
                 oldClrType: typeof(int),
-                oldType: "INTEGER")
-                .Annotation("SqlServer:Identity", "1, 1");
+                oldType: "INTEGER");
+                //.Annotation("SqlServer:Identity", "1, 1");
 
             migrationBuilder.AlterColumn<string>(
                 name: "Title",
@@ -99,8 +99,8 @@ namespace QuickTix.Migrations
                 type: "int",
                 nullable: false,
                 oldClrType: typeof(int),
-                oldType: "INTEGER")
-                .Annotation("SqlServer:Identity", "1, 1");
+                oldType: "INTEGER");
+                //.Annotation("SqlServer:Identity", "1, 1");
 
             migrationBuilder.AlterColumn<string>(
                 name: "Name",
@@ -116,8 +116,8 @@ namespace QuickTix.Migrations
                 type: "int",
                 nullable: false,
                 oldClrType: typeof(int),
-                oldType: "INTEGER")
-                .Annotation("SqlServer:Identity", "1, 1");
+                oldType: "INTEGER");
+                //.Annotation("SqlServer:Identity", "1, 1");
         }
 
         /// <inheritdoc />
@@ -145,8 +145,8 @@ namespace QuickTix.Migrations
                 type: "INTEGER",
                 nullable: false,
                 oldClrType: typeof(int),
-                oldType: "int")
-                .OldAnnotation("SqlServer:Identity", "1, 1");
+                oldType: "int");
+                //.OldAnnotation("SqlServer:Identity", "1, 1");
 
             migrationBuilder.AlterColumn<string>(
                 name: "Title",
@@ -211,8 +211,8 @@ namespace QuickTix.Migrations
                 type: "INTEGER",
                 nullable: false,
                 oldClrType: typeof(int),
-                oldType: "int")
-                .OldAnnotation("SqlServer:Identity", "1, 1");
+                oldType: "int");
+                //.OldAnnotation("SqlServer:Identity", "1, 1");
 
             migrationBuilder.AlterColumn<string>(
                 name: "Name",
@@ -228,8 +228,8 @@ namespace QuickTix.Migrations
                 type: "INTEGER",
                 nullable: false,
                 oldClrType: typeof(int),
-                oldType: "int")
-                .OldAnnotation("SqlServer:Identity", "1, 1");
+                oldType: "int");
+                //.OldAnnotation("SqlServer:Identity", "1, 1");
         }
     }
 }

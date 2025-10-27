@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using QuickTix.Data;
 using System;
+using System.Configuration;
 var builder = WebApplication.CreateBuilder(args);
 
 if (builder.Environment.IsDevelopment())
@@ -10,19 +11,21 @@ if (builder.Environment.IsDevelopment())
     builder.Configuration.AddUserSecrets<Program>();
 }
 
-builder.Services.AddDbContext<QuickTixContext>(options =>
-{
-    var env = builder.Environment;
+//builder.Services.AddDbContext<QuickTixContext>(options =>
+//{
+//    var env = builder.Environment;
 
-    if (env.IsDevelopment())
-    {
-        options.UseSqlite(builder.Configuration.GetConnectionString("QuickTixContext"));
-    }
-    else
-    {
-        options.UseSqlServer(builder.Configuration.GetConnectionString("AzureContext"));
-    }
-});
+//    if (env.IsDevelopment())
+//    {
+//        options.UseSqlite(builder.Configuration.GetConnectionString("QuickTixContext"));
+//    }
+//    else
+//    {
+//        options.UseSqlServer(builder.Configuration.GetConnectionString("AzureContext"));
+//    }
+//});
+builder.Services.AddDbContext<QuickTixContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection")));
 
 
 // Add services to the container.
