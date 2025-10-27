@@ -4,6 +4,12 @@ using Microsoft.Extensions.DependencyInjection;
 using QuickTix.Data;
 using System;
 var builder = WebApplication.CreateBuilder(args);
+
+if (builder.Environment.IsDevelopment())
+{
+    builder.Configuration.AddUserSecrets<Program>();
+}
+
 builder.Services.AddDbContext<QuickTixContext>(options =>
 {
     var env = builder.Environment;
@@ -33,10 +39,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.AccessDeniedPath = "/Account/AccessDenied";
     });
 
-if (builder.Environment.IsDevelopment())
-{
-    builder.Configuration.AddUserSecrets<Program>();
-}
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

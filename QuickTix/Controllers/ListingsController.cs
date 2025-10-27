@@ -1,9 +1,12 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using QuickTix.Data;
 using QuickTix.Models;
+using System.Composition;
 
 namespace QuickTix.Controllers
 {
@@ -12,11 +15,29 @@ namespace QuickTix.Controllers
     {
         private readonly QuickTixContext _context;
         private readonly IWebHostEnvironment _hostEnvironment;
+        private readonly IConfiguration _configuration;
+        private readonly BlobContainerClient _containerClient;
 
-        public ListingsController(QuickTixContext context, IWebHostEnvironment hostEnvironment)
+        public ListingsController(QuickTixContext context, IWebHostEnvironment hostEnvironment, IConfiguration configuration)
         {
             _context = context;
             _hostEnvironment = hostEnvironment;
+            _configuration = configuration;
+
+            var connectionString = _configuration["AzureStorage"];
+
+            // DEBUG: Check what the connection string actually is
+            Console.WriteLine("AzureStorage connection string: " + connectionString);
+
+            if (string.IsNullOrWhiteSpace(connectionString))
+            {
+                throw new Exception("AzureStorage secret not found. Make sure user secrets are configured correctly.");
+            }
+
+            var containerName = "uploads";
+            _containerClient = new BlobContainerClient(connectionString, containerName);
+            _containerClient.CreateIfNotExists(PublicAccessType.Blob);
+            _containerClient.SetAccessPolicy(PublicAccessType.Blob);
         }
 
         // GET: Listings
@@ -25,6 +46,8 @@ namespace QuickTix.Controllers
             var listings = _context.Listing
                 .Include(l => l.Categories)
                 .Include(l => l.Owners);
+
+            ViewBag.BlobBaseUrl = "https://nscc0511519inet.blob.core.windows.net/uploads";
             return View(await listings.ToListAsync());
         }
 
@@ -58,27 +81,24 @@ namespace QuickTix.Controllers
         {
             if (!ModelState.IsValid)
             {
-                // Repopulate dropdowns and return view
                 ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "Name", listing.CategoryId);
                 ViewData["OwnerId"] = new SelectList(_context.Set<Owner>(), "OwnerId", "Name", listing.OwnerId);
                 return View(listing);
             }
 
-            // Handle image upload
             if (listing.Photo != null && listing.Photo.Length > 0)
             {
-                string uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath, "images");
-                Directory.CreateDirectory(uploadsFolder);
+                var fileExt = Path.GetExtension(listing.Photo.FileName); // e.g., ".jpg"
+                string blobName = Guid.NewGuid().ToString() + fileExt;
 
-                string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(listing.Photo.FileName);
-                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                var blobClient = _containerClient.GetBlobClient(blobName);
 
-                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                using (var stream = listing.Photo.OpenReadStream())
                 {
-                    await listing.Photo.CopyToAsync(fileStream);
+                    await blobClient.UploadAsync(stream, new BlobHttpHeaders { ContentType = listing.Photo.ContentType });
                 }
 
-                listing.PhotoFileName = uniqueFileName;
+                listing.PhotoFileName = blobName; // store only GUID + extension
             }
 
             _context.Add(listing);
@@ -119,39 +139,36 @@ namespace QuickTix.Controllers
             if (existingListing == null)
                 return NotFound();
 
-            listing.Photo ??= null;
-
             if (ModelState.IsValid)
             {
                 try
                 {
-                    string uploadsFolder = Path.Combine(_hostEnvironment.WebRootPath, "images");
-                    Directory.CreateDirectory(uploadsFolder);
-
-                    // If a new photo is uploaded
+                    // If a new photo was uploaded
                     if (listing.Photo != null && listing.Photo.Length > 0)
                     {
-                        string uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(listing.Photo.FileName);
-                        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                        string blobName = Guid.NewGuid().ToString() + Path.GetExtension(listing.Photo.FileName);
+                        var blobClient = _containerClient.GetBlobClient(blobName);
 
-                        using (var fileStream = new FileStream(filePath, FileMode.Create))
+                        using (var stream = listing.Photo.OpenReadStream())
                         {
-                            await listing.Photo.CopyToAsync(fileStream);
+                            await blobClient.UploadAsync(stream, new BlobHttpHeaders
+                            {
+                                ContentType = listing.Photo.ContentType
+                            });
                         }
 
-                        // Delete old photo if exists
+                        // Delete old blob (by name, not full URL)
                         if (!string.IsNullOrEmpty(existingListing.PhotoFileName))
                         {
-                            string oldFile = Path.Combine(uploadsFolder, existingListing.PhotoFileName);
-                            if (System.IO.File.Exists(oldFile))
-                                System.IO.File.Delete(oldFile);
+                            var oldBlob = _containerClient.GetBlobClient(existingListing.PhotoFileName);
+                            await oldBlob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
                         }
 
-                        listing.PhotoFileName = uniqueFileName;
+                        listing.PhotoFileName = blobName;
                     }
                     else
                     {
-                        // No new photo uploaded — preserve existing or none
+                        // Preserve existing blob name
                         listing.PhotoFileName = existingListing.PhotoFileName;
                     }
 
@@ -167,10 +184,8 @@ namespace QuickTix.Controllers
                 }
             }
 
-            // Repopulate dropdowns for re-rendered view
             ViewData["CategoryId"] = new SelectList(_context.Set<Category>(), "CategoryId", "Name", listing.CategoryId);
             ViewData["OwnerId"] = new SelectList(_context.Set<Owner>(), "OwnerId", "Name", listing.OwnerId);
-            listing.ExistingPhotoPath = existingListing.PhotoFileName;
 
             return View(listing);
         }
