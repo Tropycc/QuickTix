@@ -11,21 +11,19 @@ if (builder.Environment.IsDevelopment())
     builder.Configuration.AddUserSecrets<Program>();
 }
 
-//builder.Services.AddDbContext<QuickTixContext>(options =>
-//{
-//    var env = builder.Environment;
-
-//    if (env.IsDevelopment())
-//    {
-//        options.UseSqlite(builder.Configuration.GetConnectionString("QuickTixContext"));
-//    }
-//    else
-//    {
-//        options.UseSqlServer(builder.Configuration.GetConnectionString("AzureContext"));
-//    }
-//});
 builder.Services.AddDbContext<QuickTixContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("AzureConnection")));
+{
+    var env = builder.Environment;
+
+    if (env.IsDevelopment())
+    {
+        options.UseSqlite(builder.Configuration.GetConnectionString("QuickTixContext"));
+    }
+    else
+    {
+        options.UseSqlServer(builder.Configuration.GetConnectionString("AzureContext"));
+    }
+});
 
 
 // Add services to the container.
