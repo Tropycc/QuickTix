@@ -11,14 +11,14 @@ using QuickTix.Data;
 namespace QuickTix.Migrations
 {
     [DbContext(typeof(QuickTixContext))]
-    [Migration("20250926171609_InitialMigration")]
-    partial class InitialMigration
+    [Migration("20251114173416_initialmigration")]
+    partial class initialmigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "9.0.0");
+            modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
 
             modelBuilder.Entity("QuickTix.Models.Category", b =>
                 {
@@ -41,10 +41,6 @@ namespace QuickTix.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("CategoryId")
                         .HasColumnType("INTEGER");
 
@@ -59,11 +55,13 @@ namespace QuickTix.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Owner")
-                        .IsRequired()
+                    b.Property<int>("OwnerId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("PhotoFileName")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("OwnerId")
+                    b.Property<int?>("PurchaseId")
                         .HasColumnType("INTEGER");
 
                     b.Property<string>("Title")
@@ -75,6 +73,8 @@ namespace QuickTix.Migrations
                     b.HasIndex("CategoryId");
 
                     b.HasIndex("OwnerId");
+
+                    b.HasIndex("PurchaseId");
 
                     b.ToTable("Listing");
                 });
@@ -98,6 +98,31 @@ namespace QuickTix.Migrations
                     b.ToTable("Owner");
                 });
 
+            modelBuilder.Entity("QuickTix.Models.Purchase", b =>
+                {
+                    b.Property<int>("PurchaseId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("BuyerEmail")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BuyerName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int>("ListingId")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<DateTime>("PurchaseDate")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("PurchaseId");
+
+                    b.ToTable("Purchase");
+                });
+
             modelBuilder.Entity("QuickTix.Models.Listing", b =>
                 {
                     b.HasOne("QuickTix.Models.Category", "Categories")
@@ -112,6 +137,10 @@ namespace QuickTix.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("QuickTix.Models.Purchase", null)
+                        .WithMany("Listings")
+                        .HasForeignKey("PurchaseId");
+
                     b.Navigation("Categories");
 
                     b.Navigation("Owners");
@@ -123,6 +152,11 @@ namespace QuickTix.Migrations
                 });
 
             modelBuilder.Entity("QuickTix.Models.Owner", b =>
+                {
+                    b.Navigation("Listings");
+                });
+
+            modelBuilder.Entity("QuickTix.Models.Purchase", b =>
                 {
                     b.Navigation("Listings");
                 });

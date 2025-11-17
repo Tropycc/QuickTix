@@ -1,0 +1,29 @@
+﻿@model IEnumerable<QuickTix.Models.Purchase>
+
+@{
+    ViewData["Title"] = "All Purchases";
+}
+
+<h2>All Purchases</h2>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Buyer</th>
+            <th>Email</th>
+            <th>Date</th>
+            <th>Listing</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var purchase in Model)
+        {
+            <tr>
+                <td>@purchase.BuyerName</td>
+                <td>@purchase.BuyerEmail</td>
+                <td>@purchase.PurchaseDate</td>
+                <td>@purchase.Listing?.Title</td>
+            </tr>
+        }
+    </tbody>
+</table>

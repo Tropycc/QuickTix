@@ -17,5 +17,6 @@ namespace QuickTix.Data
         public DbSet<QuickTix.Models.Listing> Listing { get; set; } = default!;
         public DbSet<QuickTix.Models.Category> Category { get; set; } = default!;
         public DbSet<QuickTix.Models.Owner> Owner { get; set; } = default!;
+        public DbSet<QuickTix.Models.Purchase> Purchase { get; set; } = default!;
     }
 }

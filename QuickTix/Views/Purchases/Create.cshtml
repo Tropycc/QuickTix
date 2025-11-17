@@ -1,0 +1,33 @@
+﻿@model QuickTix.Models.Purchase
+
+@{
+    ViewData["Title"] = "Purchase Ticket";
+}
+
+<h2>Purchase Ticket</h2>
+
+<form asp-action="Create" asp-controller="Purchases" method="post">
+    <input type="hidden" asp-for="ListingId" />
+
+    <div class="form-group mt-3">
+        <label asp-for="BuyerName"></label>
+        <input asp-for="BuyerName" class="form-control" />
+        <span asp-validation-for="BuyerName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mt-3">
+        <label asp-for="BuyerEmail"></label>
+        <input asp-for="BuyerEmail" class="form-control" />
+        <span asp-validation-for="BuyerEmail" class="text-danger"></span>
+    </div>
+
+    <div class="form-group mt-3">
+        <input type="submit" value="Submit Purchase" class="btn btn-primary" />
+    </div>
+</form>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

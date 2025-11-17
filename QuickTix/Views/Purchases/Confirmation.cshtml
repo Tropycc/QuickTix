@@ -1,0 +1,33 @@
+﻿@model QuickTix.Models.Purchase
+
+@{
+    ViewData["Title"] = "Purchase Confirmation";
+}
+
+<h2>Purchase Confirmed</h2>
+
+<p><strong>Buyer Name:</strong> @Model.BuyerName</p>
+<p><strong>Email:</strong> @Model.BuyerEmail</p>
+<p><strong>Date:</strong> @Model.PurchaseDate</p>
+
+<hr />
+
+<h3>Listing Details</h3>
+
+<p><strong>Title:</strong> @Model.Listing.Title</p>
+<p><strong>Description:</strong> @Model.Listing.Description</p>
+<p><strong>Location:</strong> @Model.Listing.Location</p>
+
+@if (Model.Listing.Categories != null)
+{
+    <p><strong>Category:</strong> @Model.Listing.Categories.Name</p>
+}
+
+@if (Model.Listing.Owners != null)
+{
+    <p><strong>Owner:</strong> @Model.Listing.Owners.Name</p>
+}
+
+<hr />
+
+<a class="btn btn-success" href="/">Back to Home</a>

@@ -33,5 +33,7 @@ namespace QuickTix.Models
         // Navigation Properties
         public Category? Categories { get; set; }
         public Owner? Owners { get; set; }
+
+        public Purchase? Purchase { get; set; }
     }
 }

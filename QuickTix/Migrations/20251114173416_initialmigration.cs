@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace QuickTix.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialMigration : Migration
+    public partial class initialmigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -39,6 +39,22 @@ namespace QuickTix.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Purchase",
+                columns: table => new
+                {
+                    PurchaseId = table.Column<int>(type: "INTEGER", nullable: false)
+                        .Annotation("Sqlite:Autoincrement", true),
+                    BuyerName = table.Column<string>(type: "TEXT", nullable: false),
+                    BuyerEmail = table.Column<string>(type: "TEXT", nullable: false),
+                    PurchaseDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    ListingId = table.Column<int>(type: "INTEGER", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Purchase", x => x.PurchaseId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Listing",
                 columns: table => new
                 {
@@ -48,10 +64,10 @@ namespace QuickTix.Migrations
                     OwnerId = table.Column<int>(type: "INTEGER", nullable: false),
                     Title = table.Column<string>(type: "TEXT", nullable: false),
                     Description = table.Column<string>(type: "TEXT", nullable: false),
-                    Category = table.Column<string>(type: "TEXT", nullable: false),
                     Location = table.Column<string>(type: "TEXT", nullable: false),
-                    Owner = table.Column<string>(type: "TEXT", nullable: false),
-                    ListingDate = table.Column<DateTime>(type: "TEXT", nullable: false)
+                    ListingDate = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    PhotoFileName = table.Column<string>(type: "TEXT", nullable: true),
+                    PurchaseId = table.Column<int>(type: "INTEGER", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -68,6 +84,11 @@ namespace QuickTix.Migrations
                         principalTable: "Owner",
                         principalColumn: "OwnerId",
                         onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Listing_Purchase_PurchaseId",
+                        column: x => x.PurchaseId,
+                        principalTable: "Purchase",
+                        principalColumn: "PurchaseId");
                 });
 
             migrationBuilder.CreateIndex(
@@ -79,6 +100,11 @@ namespace QuickTix.Migrations
                 name: "IX_Listing_OwnerId",
                 table: "Listing",
                 column: "OwnerId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Listing_PurchaseId",
+                table: "Listing",
+                column: "PurchaseId");
         }
 
         /// <inheritdoc />
@@ -92,6 +118,9 @@ namespace QuickTix.Migrations
 
             migrationBuilder.DropTable(
                 name: "Owner");
+
+            migrationBuilder.DropTable(
+                name: "Purchase");
         }
     }
 }
