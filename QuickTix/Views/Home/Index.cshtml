@@ -14,6 +14,9 @@
                 @Html.DisplayNameFor(model => model.Title)
             </th>
             <th>
+                @Html.DisplayNameFor(model => model.TicketPrice)
+            </th>
+            <th>
                 @Html.DisplayNameFor(model => model.Description)
             </th>
             <th>
@@ -41,6 +44,9 @@
             <tr>
                 <td>
                     @Html.DisplayFor(modelItem => item.Title)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TicketPrice)
                 </td>
                 <td>
                     @Html.DisplayFor(modelItem => item.Description)
@@ -71,7 +77,6 @@
                     }
                 </td>
                 <td>
-                    <a asp-controller="Purchases" asp-action="Create" asp-route-listingId="@item.ListingId" class="btn btn-primary">Buy Ticket</a> |
                     <a asp-controller="Listings" asp-action="Edit" asp-route-id="@item.ListingId" class="btn btn-primary">Edit</a> |
                     <a asp-action="Details" asp-route-id="@item.ListingId" class="btn btn-primary">Details</a> |
                     <a asp-controller="Listings" asp-action="Delete" asp-route-id="@item.ListingId" class="btn btn-primary">Delete</a>

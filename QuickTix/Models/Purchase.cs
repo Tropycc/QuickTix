@@ -11,6 +11,11 @@ namespace QuickTix.Models
         [Required]
         [Display(Name = "Name")]
         public string BuyerName { get; set; }
+        public int Quantity { get; set; }
+        [Column(TypeName = "decimal(10, 2)")]
+        public decimal TotalPrice { get; set; }
+        [Column(TypeName = "decimal(10, 2)")]
+        public decimal PricePerTicket { get; set; }
 
         [Required, EmailAddress]
         [Display(Name = "Email")]

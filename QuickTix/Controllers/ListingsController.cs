@@ -54,14 +54,24 @@ namespace QuickTix.Controllers
         // GET: Listings/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null) return NotFound();
+            if (id == null)
+                return NotFound();
 
             var listing = await _context.Listing
                 .Include(l => l.Categories)
                 .Include(l => l.Owners)
                 .FirstOrDefaultAsync(m => m.ListingId == id);
 
-            if (listing == null) return NotFound();
+            if (listing == null)
+                return NotFound();
+
+            // Load all purchases
+            var purchases = await _context.Purchase
+                .Where(p => p.ListingId == id)
+                .OrderByDescending(p => p.PurchaseDate)
+                .ToListAsync();
+
+            ViewBag.Purchases = purchases;
 
             return View(listing);
         }
@@ -74,10 +84,9 @@ namespace QuickTix.Controllers
             return View();
         }
 
-        // POST: Listings/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("ListingId,CategoryId,OwnerId,Title,Description,Location,ListingDate,Photo")] Listing listing)
+        public async Task<IActionResult> Create([Bind("ListingId,CategoryId,OwnerId,Title,Description,Location,ListingDate,TicketPrice,Photo")] Listing listing)
         {
             if (!ModelState.IsValid)
             {
@@ -88,7 +97,7 @@ namespace QuickTix.Controllers
 
             if (listing.Photo != null && listing.Photo.Length > 0)
             {
-                var fileExt = Path.GetExtension(listing.Photo.FileName); // e.g., ".jpg"
+                var fileExt = Path.GetExtension(listing.Photo.FileName);
                 string blobName = Guid.NewGuid().ToString() + fileExt;
 
                 var blobClient = _containerClient.GetBlobClient(blobName);
@@ -98,7 +107,7 @@ namespace QuickTix.Controllers
                     await blobClient.UploadAsync(stream, new BlobHttpHeaders { ContentType = listing.Photo.ContentType });
                 }
 
-                listing.PhotoFileName = blobName; // store only GUID + extension
+                listing.PhotoFileName = blobName;
             }
 
             _context.Add(listing);
@@ -123,12 +132,11 @@ namespace QuickTix.Controllers
             return View(listing);
         }
 
-        // POST: Listings/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(
     int id,
-    [Bind("ListingId,CategoryId,OwnerId,Title,Description,Location,ListingDate,Photo,PhotoFileName")] Listing listing)
+    [Bind("ListingId,CategoryId,OwnerId,Title,Description,Location,ListingDate,TicketPrice,Photo,PhotoFileName")] Listing listing)
         {
             if (id != listing.ListingId)
                 return NotFound();
@@ -157,7 +165,6 @@ namespace QuickTix.Controllers
                             });
                         }
 
-                        // Delete old blob (by name, not full URL)
                         if (!string.IsNullOrEmpty(existingListing.PhotoFileName))
                         {
                             var oldBlob = _containerClient.GetBlobClient(existingListing.PhotoFileName);
@@ -168,7 +175,6 @@ namespace QuickTix.Controllers
                     }
                     else
                     {
-                        // Preserve existing blob name
                         listing.PhotoFileName = existingListing.PhotoFileName;
                     }
 
@@ -213,16 +219,17 @@ namespace QuickTix.Controllers
             var listing = await _context.Listing.FindAsync(id);
             if (listing != null)
             {
+                // Delete photo from Azure Blob Storage
                 if (!string.IsNullOrEmpty(listing.PhotoFileName))
                 {
-                    string photoPath = Path.Combine(_hostEnvironment.WebRootPath, "images", listing.PhotoFileName);
-                    if (System.IO.File.Exists(photoPath))
-                        System.IO.File.Delete(photoPath);
+                    var blob = _containerClient.GetBlobClient(listing.PhotoFileName);
+                    await blob.DeleteIfExistsAsync(DeleteSnapshotsOption.IncludeSnapshots);
                 }
 
                 _context.Listing.Remove(listing);
                 await _context.SaveChangesAsync();
             }
+
             return RedirectToAction("Index", "Home");
         }
 

@@ -6,6 +6,9 @@ namespace QuickTix.Models
     public class Listing
     {
         public int ListingId { get; set; }
+        [Column(TypeName = "decimal(10, 2)")]
+        [Display(Name = "Ticket Price")]
+        public decimal TicketPrice { get; set; }
 
         [Display(Name = "Category")]
         public int CategoryId { get; set; }
