@@ -57,6 +57,7 @@ namespace QuickTix.Controllers
             if (id == null)
                 return NotFound();
 
+            // Load the listing with related Category and Owner
             var listing = await _context.Listing
                 .Include(l => l.Categories)
                 .Include(l => l.Owners)
@@ -65,13 +66,24 @@ namespace QuickTix.Controllers
             if (listing == null)
                 return NotFound();
 
-            // Load all purchases
+            // Load all purchases for this listing
             var purchases = await _context.Purchase
-                .Where(p => p.ListingId == id)
+                .Where(p => p.ListingId == listing.ListingId)
                 .OrderByDescending(p => p.PurchaseDate)
                 .ToListAsync();
 
+            // DEBUG: Log purchase info
+            Console.WriteLine($"[DEBUG] Listing {listing.ListingId} - '{listing.Title}' has {purchases.Count} purchases.");
+            foreach (var p in purchases)
+            {
+                Console.WriteLine($"[DEBUG] PurchaseId: {p.PurchaseId}, Buyer: {p.BuyerName}, Qty: {p.Quantity}, Total: {p.TotalPrice}");
+            }
+
+            // Option 1: Pass via ViewBag (quick debugging)
             ViewBag.Purchases = purchases;
+
+            // Option 2 (recommended): Strongly typed tuple for future-proofing
+            // return View((listing, purchases));
 
             return View(listing);
         }
