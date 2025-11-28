@@ -78,7 +78,7 @@
                 </td>
                 <td>
                     <a asp-controller="Listings" asp-action="Edit" asp-route-id="@item.ListingId" class="btn btn-primary">Edit</a> |
-                    <a asp-action="Details" asp-route-id="@item.ListingId" class="btn btn-primary">Details</a> |
+                    <a asp-controller="Listings" asp-action="Details" asp-route-id="@item.ListingId" class="btn btn-primary">Details</a> |
                     <a asp-controller="Listings" asp-action="Delete" asp-route-id="@item.ListingId" class="btn btn-primary">Delete</a>
                 </td>
             </tr>

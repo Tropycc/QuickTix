@@ -21,23 +21,5 @@ namespace QuickTix.Controllers
             var quickTixContext = _context.Listing.Include(l => l.Categories).Include(l => l.Owners);
             return View(await quickTixContext.ToListAsync());
         }
-        public async Task<IActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var listing = await _context.Listing
-                .Include(l => l.Categories)
-                .Include(l => l.Owners)
-                .FirstOrDefaultAsync(m => m.ListingId == id);
-            if (listing == null)
-            {
-                return NotFound();
-            }
-
-            return View(listing);
-        }
     }
 }

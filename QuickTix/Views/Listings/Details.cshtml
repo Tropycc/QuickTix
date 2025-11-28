@@ -50,13 +50,6 @@
 
 <hr />
 
-<div>
-    <a asp-controller="Listings" asp-action="Edit" asp-route-id="@Model.ListingId" class="btn btn-primary">Edit Listing</a>
-    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Back</a>
-</div>
-
-<hr />
-
 <h3>Purchases</h3>
 
 @if (purchases == null || purchases.Count == 0)
@@ -93,3 +86,8 @@ else
         </tbody>
     </table>
 }
+
+<div>
+    <a asp-controller="Listings" asp-action="Edit" asp-route-id="@Model.ListingId" class="btn btn-primary">Edit Listing</a>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Back</a>
+</div>
