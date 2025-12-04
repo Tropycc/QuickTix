@@ -16,6 +16,12 @@ namespace QuickTix.Models
         public decimal TotalPrice { get; set; }
         [Column(TypeName = "decimal(10, 2)")]
         public decimal PricePerTicket { get; set; }
+        [Required]
+        public string CreditCardNumber { get; set; }
+        [Required]
+        public string ExpirationDate { get; set; }
+        [Required]
+        public string CVV { get; set; }
 
         [Required, EmailAddress]
         [Display(Name = "Email")]

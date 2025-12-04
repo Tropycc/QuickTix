@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuickTix.Data;
 
@@ -10,9 +11,11 @@ using QuickTix.Data;
 namespace QuickTix.Migrations
 {
     [DbContext(typeof(QuickTixContext))]
-    partial class QuickTixContextModelSnapshot : ModelSnapshot
+    [Migration("20251204162238_convertingcreditcardtostring")]
+    partial class convertingcreditcardtostring
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.10");

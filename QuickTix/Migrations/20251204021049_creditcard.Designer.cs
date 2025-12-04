@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QuickTix.Data;
 
@@ -10,9 +11,11 @@ using QuickTix.Data;
 namespace QuickTix.Migrations
 {
     [DbContext(typeof(QuickTixContext))]
-    partial class QuickTixContextModelSnapshot : ModelSnapshot
+    [Migration("20251204021049_creditcard")]
+    partial class creditcard
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.10");
@@ -107,17 +110,14 @@ namespace QuickTix.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("CVV")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<int>("CVV")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<string>("CreditCardNumber")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<int>("CreditCardNumber")
+                        .HasColumnType("INTEGER");
 
-                    b.Property<string>("ExpirationDate")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
+                    b.Property<int>("ExpirationDate")
+                        .HasColumnType("INTEGER");
 
                     b.Property<int>("ListingId")
                         .HasColumnType("INTEGER");
